@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load cache %}
+
+{% block title %}
+  {{ object.title }}
+{% endblock %}
+
+{% block content %}
+  <h1>{{ object.title }}</h1>
+
+  <div class="contents">
+    <h3>Modules</h3>
+    <ul id="modules">
+      {% for m in object.modules.all %}
+        <li data-id="{{ m.id }}" {% if m == module %}class="selected"{% endif %}>
+          <a href="{% url 'student_course_detail_module' object.id m.id %}">
+            <span>Module {{ m.order|add:1 }}</span><br>
+            {{ m.title }}
+          </a>
+        </li>
+      {% empty %}
+        <li>No modules yet.</li>
+      {% endfor %}
+    </ul>
+
+    <h3>
+      <a href="{% url 'chat:course_chat_room' object.id %}">
+        Course chat room
+      </a>
+    </h3>
+  </div>
+
+  <div class="module">
+    {% if module %}
+      {% cache 600 module_contents module.id %}
+        <h2>{{ module.title }}</h2>
+        {% for content in module.contents.all %}
+          {% with item=content.item %}
+            <h3>{{ item.title }}</h3>
+            {{ item.render }}
+          {% endwith %}
+        {% endfor %}
+      {% endcache %}
+    {% else %}
+      <p>No module selected.</p>
+    {% endif %}
+  </div>
+{% endblock %}
